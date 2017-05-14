@@ -1,4 +1,4 @@
-// TODO duration based on video length
+// TODO work on making more "random" the sleep time
 
 function randomFromInterval(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min)
@@ -11,6 +11,9 @@ function sleep(ms) {
 
 class Sticazzo {
   constructor(el) {
+    // BIND THAT SHIT
+    this.runTimeline = this.runTimeline.bind(this)
+
     this.widthLimits = [20, 80]
     this.heightLimits = [20, 80]
 
@@ -28,30 +31,49 @@ class Sticazzo {
     this.x = randomFromInterval(...this.widthLimits)
     this.y = randomFromInterval(...this.heightLimits)
 
-    await sleep(randomFromInterval(0, 1000))
+    await sleep(randomFromInterval(0, 6000))
 
     await this.playVideo(this.el)
     this.animate(this.el)
-      .addEventListener('finish', this.runTimeline.bind(this))
+      .finished.then(this.runTimeline)
   }
 
   animate(el) {
     const initialScale = 0.8
-    const finalScale = 1.5
+    const middleScale = 1
+    const finalScale = 1.2
+
+    const growOutDuration = 200
 
     const translation = `calc(-50% + ${this.x}vw), calc(-50% + ${this.y}vh)`
 
-    return el.animate([
-      { offset: 0, transform: `translate(${translation}) scale(${initialScale})`, opacity: 0 },
-      { offset: 0.1, opacity: 1 },
-      { offset: 0.9, opacity: 1 },
-      { offset: 1, transform: `translate(${translation}) scale(${finalScale})`, opacity: 0 },
-    ], {
-      duration: 2000,
-      easing: 'ease-out',
-      iterations: 1,
-      fill: 'forwards',
-    })
+    const timeline = new SequenceEffect([
+      new KeyframeEffect(el, [
+        { offset: 0, transform: `translate(${translation}) scale(${initialScale})`, opacity: 0 },
+        { offset: 0.1, opacity: 1 },
+        { offset: 1, transform: `translate(${translation}) scale(${middleScale})`, opacity: 1 },
+      ], {
+        duration: growOutDuration,
+        easing: 'ease-out',
+        iterations: 1,
+        fill: 'forwards',
+      }),
+
+      new KeyframeEffect(el, [
+        { offset: 0, transform: `translate(${translation}) scale(${middleScale})`, opacity: 1 },
+        { offset: 0.9, opacity: 1 },
+        { offset: 1, transform: `translate(${translation}) scale(${finalScale})`, opacity: 0 },
+      ], {
+        duration: (el.duration * 1000) - growOutDuration,
+        easing: 'linear',
+        iterations: 1,
+        fill: 'forwards',
+      }),
+    ])
+
+    const animation = new Animation(timeline, document.timeline)
+    animation.play()
+    return animation
   }
 
   // not always when you play() a video it starts playing
