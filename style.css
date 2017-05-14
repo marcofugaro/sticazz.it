@@ -1,0 +1,19 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #111;
+}
+
+video {
+  opacity: 0;
+  will-change: transform;
+}
+
+.supermartellone {
+  position: absolute;
+}
+
+video:not(.supermartellone) {
+  position: absolute;
+  max-width: 60%;
+}
