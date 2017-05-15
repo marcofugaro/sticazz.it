@@ -16,8 +16,8 @@ class Sticazzo {
 
     this.widthLimits = [20, 80]
     this.heightLimits = [20, 80]
-
     this.el = el
+    this.timeToWait = window.sticazziLength * window.sticazzInterval - this.el.duration * 1000
 
     this.runTimeline()
   }
@@ -30,18 +30,18 @@ class Sticazzo {
     this.resetVideo(this.el)
     this.x = randomFromInterval(...this.widthLimits)
     this.y = randomFromInterval(...this.heightLimits)
+    this.el.style.zIndex = ++window.sticazzIndex
 
-    await sleep(randomFromInterval(0, 6000))
-
-    await this.playVideo(this.el)
-    this.animate(this.el)
-      .finished.then(this.runTimeline)
+    // await this.playVideo(this.el)
+    await this.animate(this.el).finished
+    await sleep(this.timeToWait)
+    this.runTimeline()
   }
 
   animate(el) {
-    const initialScale = 0.8
+    const initialScale = 0.9
     const middleScale = 1
-    const finalScale = 1.2
+    const finalScale = middleScale + el.duration * 0.06
 
     const growOutDuration = 200
 
@@ -96,7 +96,14 @@ class Sticazzo {
 
 
 window.addEventListener('load', () => {
-  document.querySelectorAll('video').forEach((el) => {
+  const sticazziVideos = [...document.querySelectorAll('video')]
+  window.sticazzIndex = 0
+  window.sticazziLength = sticazziVideos.length
+  window.sticazzInterval = 1000 // the time between each video popping out
+
+  sticazziVideos.forEach(async (el, i) => {
+    const initialTimeToWait = i * window.sticazzInterval
+    await sleep(initialTimeToWait)
     new Sticazzo(el)
   })
 })
