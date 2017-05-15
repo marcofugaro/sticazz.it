@@ -5,15 +5,15 @@ body {
 }
 
 video {
+  position: absolute;
   opacity: 0;
   will-change: transform;
 }
 
-.supermartellone {
-  position: absolute;
+.supersticazzo {
+  width: 90%;
 }
 
-video:not(.supermartellone) {
-  position: absolute;
+video:not(.supersticazzo) {
   max-width: 60%;
 }

@@ -14,7 +14,8 @@ class Sticazzo {
     this.widthLimits = [20, 80]
     this.heightLimits = [20, 80]
     this.el = el
-    this.timeToWait = window.sticazziLength * window.sticazzInterval - this.el.duration * 1000
+    this.isSuper = this.el.classList.contains('supersticazzo')
+    this.timeToWait = window.sticazziLength * window.sticazzInterval - this.el.duration * 1000 + window.superSticazzoPause
 
     this.runTimeline()
   }
@@ -26,11 +27,11 @@ class Sticazzo {
   // and then we do it all again until the user doesn't understand the meaning of STICAZZI!
   async runTimeline() {
     this.resetVideo(this.el)
-    this.x = randomFromInterval(...this.widthLimits)
-    this.y = randomFromInterval(...this.heightLimits)
+    this.x = this.isSuper ? 50 : randomFromInterval(...this.widthLimits)
+    this.y = this.isSuper ? 50 : randomFromInterval(...this.heightLimits)
     this.el.style.zIndex = ++window.sticazzIndex
 
-    // await this.playVideo(this.el)
+    await this.playVideo(this.el)
     await this.animate(this.el).finished
     await sleep(this.timeToWait)
     this.runTimeline()
@@ -97,7 +98,8 @@ window.addEventListener('load', () => {
   const sticazziVideos = [...document.querySelectorAll('video')]
   window.sticazzIndex = 0
   window.sticazziLength = sticazziVideos.length
-  window.sticazzInterval = 1000 // the time between each video popping out
+  window.sticazzInterval = 800 // the time between each video popping out
+  window.superSticazzoPause = 1000 // how much time the superSticazzo stays in place
 
   sticazziVideos.forEach(async (el, i) => {
     const initialTimeToWait = i * window.sticazzInterval
