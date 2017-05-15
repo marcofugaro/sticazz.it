@@ -11,9 +11,6 @@ function sleep(ms) {
 
 class Sticazzo {
   constructor(el) {
-    // BIND THAT SHIT
-    this.runTimeline = this.runTimeline.bind(this)
-
     this.widthLimits = [20, 80]
     this.heightLimits = [20, 80]
     this.el = el
@@ -23,8 +20,9 @@ class Sticazzo {
   }
 
   // first we set the random position
-  // than we wait some time
+  // then we put the video in front of the others
   // then we do the animation
+  // than we wait some time
   // and then we do it all again until the user doesn't understand the meaning of STICAZZI!
   async runTimeline() {
     this.resetVideo(this.el)
