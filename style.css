@@ -4,16 +4,39 @@ body {
   background: #111;
 }
 
+.containerenzo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+
+
 video {
   position: absolute;
   opacity: 0;
   will-change: transform;
 }
-
 .supersticazzo {
   width: 90%;
 }
-
 video:not(.supersticazzo) {
   max-width: 60%;
+}
+
+
+
+.sticazzintainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.stitanticazzi {
+  line-height: 1.6em;
+  font-family: Arial Black, Arial, sans-serif;
+  font-size: calc(22px + 1vw);
+  color: rgba(255, 255, 255, 0.1);
 }
