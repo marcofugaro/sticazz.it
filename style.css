@@ -33,10 +33,13 @@ video:not(.supersticazzo) {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding-top: 0.6em;
+  padding-bottom: 0.6em;
 }
 .stitanticazzi {
   line-height: 1.6em;
-  font-family: Arial Black, Arial, sans-serif;
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-weight: 900;
   font-size: calc(22px + 1vw);
   color: rgba(255, 255, 255, 0.1);
 }

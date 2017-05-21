@@ -1,5 +1,3 @@
-// TODO work on making more "random" the sleep time
-
 function randomFromInterval(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
@@ -26,13 +24,13 @@ class Sticazzo {
   // than we wait some time
   // and then we do it all again until the user doesn't understand the meaning of STICAZZI!
   async runTimeline() {
-    this.resetVideo(this.el)
     this.x = this.isSuper ? 50 : randomFromInterval(...this.widthLimits)
     this.y = this.isSuper ? 50 : randomFromInterval(...this.heightLimits)
     this.el.style.zIndex = ++window.sticazzIndex
 
-    await this.playVideo(this.el)
+    this.playVideo(this.el)
     await this.animate(this.el).finished
+    this.stopVideo(this.el)
     await sleep(this.timeToWait)
     this.runTimeline()
   }
@@ -42,7 +40,7 @@ class Sticazzo {
     const middleScale = 1
     const finalScale = middleScale + el.duration * 0.06
 
-    const growOutDuration = 200
+    const growOutDuration = 100
 
     const translation = `calc(-50% + ${this.x}vw), calc(-50% + ${this.y}vh)`
 
@@ -75,25 +73,17 @@ class Sticazzo {
     return animation
   }
 
-  // not always when you play() a video it starts playing
   playVideo(video) {
-    return new Promise((resolve) => {
-      video.addEventListener('playing', () => {
-        video.currentTime = 0
-        resolve()
-      }, { once: true })
-
-      video.play()
-    })
+    video.currentTime = 0
+    video.muted = false
   }
 
-  resetVideo(video) {
-    video.pause()
-    video.currentTime = 0
+  stopVideo(video) {
+    video.muted = true
   }
 }
 
-
+// TODO use progressive loading
 window.addEventListener('load', () => {
   const sticazziVideos = [...document.querySelectorAll('video')]
   window.sticazzIndex = 0
