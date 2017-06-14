@@ -10,20 +10,35 @@ function pEvent(emitter, event) {
   return new Promise((resolve) => emitter.addEventListener(event, resolve))
 }
 
-function supportsAutoplay() {
-  return new Promise((resolve) => {
-    const el = document.createElement('video')
-    const src = 'data:video/mp4;base64,AAAAFGZ0eXBNU05WAAACAE1TTlYAAAOUbW9vdgAAAGxtdmhkAAAAAM9ghv7PYIb+AAACWAAACu8AAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAnh0cmFrAAAAXHRraGQAAAAHz2CG/s9ghv4AAAABAAAAAAAACu8AAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAFAAAAA4AAAAAAHgbWRpYQAAACBtZGhkAAAAAM9ghv7PYIb+AAALuAAANq8AAAAAAAAAIWhkbHIAAAAAbWhscnZpZGVBVlMgAAAAAAABAB4AAAABl21pbmYAAAAUdm1oZAAAAAAAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAVdzdGJsAAAAp3N0c2QAAAAAAAAAAQAAAJdhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAFAAOABIAAAASAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGP//AAAAEmNvbHJuY2xjAAEAAQABAAAAL2F2Y0MBTUAz/+EAGGdNQDOadCk/LgIgAAADACAAAAMA0eMGVAEABGjuPIAAAAAYc3R0cwAAAAAAAAABAAAADgAAA+gAAAAUc3RzcwAAAAAAAAABAAAAAQAAABxzdHNjAAAAAAAAAAEAAAABAAAADgAAAAEAAABMc3RzegAAAAAAAAAAAAAADgAAAE8AAAAOAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA4AAAAOAAAAFHN0Y28AAAAAAAAAAQAAA7AAAAA0dXVpZFVTTVQh0k/Ou4hpXPrJx0AAAAAcTVREVAABABIAAAAKVcQAAAAAAAEAAAAAAAAAqHV1aWRVU01UIdJPzruIaVz6ycdAAAAAkE1URFQABAAMAAAAC1XEAAACHAAeAAAABBXHAAEAQQBWAFMAIABNAGUAZABpAGEAAAAqAAAAASoOAAEAZABlAHQAZQBjAHQAXwBhAHUAdABvAHAAbABhAHkAAAAyAAAAA1XEAAEAMgAwADAANQBtAGUALwAwADcALwAwADYAMAA2ACAAMwA6ADUAOgAwAAABA21kYXQAAAAYZ01AM5p0KT8uAiAAAAMAIAAAAwDR4wZUAAAABGjuPIAAAAAnZYiAIAAR//eBLT+oL1eA2Nlb/edvwWZflzEVLlhlXtJvSAEGRA3ZAAAACkGaAQCyJ/8AFBAAAAAJQZoCATP/AOmBAAAACUGaAwGz/wDpgAAAAAlBmgQCM/8A6YEAAAAJQZoFArP/AOmBAAAACUGaBgMz/wDpgQAAAAlBmgcDs/8A6YEAAAAJQZoIBDP/AOmAAAAACUGaCQSz/wDpgAAAAAlBmgoFM/8A6YEAAAAJQZoLBbP/AOmAAAAACkGaDAYyJ/8AFBAAAAAKQZoNBrIv/4cMeQ=='
-    el.setAttribute('src', src)
-    el.play()
-      .then(() => resolve(true))
-      .catch(() => resolve(false))
-  })
+async function playAndPause(video) {
+  video.muted = true
+  await video.play()
+  video.pause()
+  video.currentTime = 0
+  video.muted = false
+}
+
+async function supportsAutoplay(testVideo) {
+  await loadVideo(testVideo)
+  try {
+    // await playAndPause(testVideo)
+    await testVideo.play()
+    testVideo.pause()
+    testVideo.currentTime = 0
+    return true
+  } catch (e) {
+    return false
+  }
 }
 
 // no error handling? E STICAZZI?!?
 function loadVideo(el) {
   return new Promise((resolve) => {
+    // if the video already loaded, resolve
+    if (el.readyState > 0) {
+      return resolve()
+    }
+
     fetch(el.getAttribute('data-src'))
       .then((response) => response.blob())
       .then((blob) => {
@@ -82,7 +97,9 @@ class Sticazzo {
     console.time('playing time')
     await this.el.play()
     console.timeEnd('playing time')
+    this.el.classList.remove('hidden')
     await this.animate(this.el).finished
+    this.el.classList.add('hidden')
     this.stopVideo(this.el)
 
     await sleep(this.timeToWait)
@@ -100,9 +117,9 @@ class Sticazzo {
 
     const timeline = new SequenceEffect([
       new KeyframeEffect(el, [
-        { offset: 0, transform: `translate(${translation}) scale(${initialScale})`, opacity: 0 },
+        { offset: 0, transform: `translate(${translation})`, opacity: 0 },
         { offset: 0.1, opacity: 1 },
-        { offset: 1, transform: `translate(${translation}) scale(${middleScale})`, opacity: 1 },
+        { offset: 1, transform: `translate(${translation})`, opacity: 1 },
       ], {
         duration: growOutDuration,
         easing: 'ease-out',
@@ -111,9 +128,9 @@ class Sticazzo {
       }),
 
       new KeyframeEffect(el, [
-        { offset: 0, transform: `translate(${translation}) scale(${middleScale})`, opacity: 1 },
+        { offset: 0, transform: `translate(${translation})`, opacity: 1 },
         { offset: 0.9, opacity: 1 },
-        { offset: 1, transform: `translate(${translation}) scale(${finalScale})`, opacity: 0 },
+        { offset: 1, transform: `translate(${translation})`, opacity: 0 },
       ], {
         duration: (el.duration * 1000) - growOutDuration,
         easing: 'linear',
@@ -144,33 +161,54 @@ class Sticazzo {
 //  /$$$$$$| $$ \  $$ /$$$$$$   | $$
 // |______/|__/  \__/|______/   |__/
 //
+// CHALLENGE: show the first video as soon as possible
+//
 async function init() {
   const sticazziVideos = [...document.querySelectorAll('video')]
+  const isDesktop = await supportsAutoplay(sticazziVideos[0])
   window.sticazzIndex = 0
   window.sticazziLength = sticazziVideos.length
   window.sticazzInterval = 800 // the time between each video popping out
   window.superSticazzoPause = 1000 // how much time the superSticazzo stays in place
   window.videoQueue = []
 
-  if (await supportsAutoplay()) {
+  if (isDesktop) {
     window.addEventListener('queueadded', startVideoPlaying, { once: true })
+    sticazziVideos.forEach(async (el, i) => {
+      // the testVideo will be the first to be added to the queue
+      await loadVideo(el)
+      addToQueue(el)
+    })
+    // TODO use await & promise.race
   } else {
     const sticazziBtn = document.querySelector('.sticazzibtn')
-    sticazziBtn.addEventListener('click', startVideoPlaying)
+    sticazziBtn.classList.remove('hidden')
+    await Promise.all([
+      Promise.all(sticazziVideos.map((el) => loadVideo(el))),
+      pEvent(sticazziBtn, 'click')
+    ])
+    sticazziBtn.classList.add('hidden')
+    startVideoPlayingMobile()
   }
 
-  sticazziVideos.forEach(async (el, i) => {
-    await loadVideo(el)
-    addToQueue(el)
-  })
 
   function startVideoPlaying() {
-    sticazziVideos.forEach(async (el, i) => {
+    Object.keys(sticazziVideos).forEach(async (i) => {
       const initialTimeToWait = i * window.sticazzInterval
       await sleep(initialTimeToWait)
 
-      // TODO do some tests and tell if it's needed to  substract the time from next round
       const video = retrieveFromQueue() || await pEvent(window, 'queueadded') && retrieveFromQueue()
+      new Sticazzo(video)
+    })
+  }
+
+  function startVideoPlayingMobile() {
+    sticazziVideos.forEach(async (el, i) => {
+      const initialTimeToWait = i * window.sticazzInterval
+
+      const video = el
+      await playAndPause(video)
+      await sleep(initialTimeToWait)
       new Sticazzo(video)
     })
   }
