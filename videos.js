@@ -21,6 +21,7 @@ async function playAndPause(video) {
 async function supportsAutoplay(testVideo) {
   await loadVideo(testVideo)
   try {
+    // TODO make the function playAndPause work here
     // await playAndPause(testVideo)
     await testVideo.play()
     testVideo.pause()
@@ -64,7 +65,7 @@ function addToQueue(el) {
 
 function retrieveFromQueue(el) {
   if (window.videoQueue.length === 0) {
-    console.error('AJAJAJAJAJA')
+    console.error('MA CHE CAZZO FAI?? NUN CE SO VIDEO CARICHI')
     return false
   }
 
@@ -173,26 +174,15 @@ async function init() {
   window.videoQueue = []
 
   if (isDesktop) {
-    window.addEventListener('queueadded', startVideoPlaying, { once: true })
-    sticazziVideos.forEach(async (el, i) => {
-      // the testVideo will be the first to be added to the queue
-      await loadVideo(el)
-      addToQueue(el)
-    })
-    // TODO use await & promise.race
-  } else {
-    const sticazziBtn = document.querySelector('.sticazzibtn')
-    sticazziBtn.classList.remove('hidden')
-    await Promise.all([
-      Promise.all(sticazziVideos.map((el) => loadVideo(el))),
-      pEvent(sticazziBtn, 'click')
-    ])
-    sticazziBtn.classList.add('hidden')
-    startVideoPlayingMobile()
-  }
+    // wait for the first video to load and then start playing
+    await Promise.race(
+      sticazziVideos.map(async (video) => {
+        // the testVideo will be the first to be added to the queue
+        await loadVideo(video)
+        addToQueue(video)
+      })
+    )
 
-
-  function startVideoPlaying() {
     Object.keys(sticazziVideos).forEach(async (i) => {
       const initialTimeToWait = i * window.sticazzInterval
       await sleep(initialTimeToWait)
@@ -200,13 +190,21 @@ async function init() {
       const video = retrieveFromQueue() || await pEvent(window, 'queueadded') && retrieveFromQueue()
       new Sticazzo(video)
     })
-  }
+  } else {
+    const sticazziBtn = document.querySelector('.sticazzibtn')
+    sticazziBtn.classList.remove('hidden')
 
-  function startVideoPlayingMobile() {
-    sticazziVideos.forEach(async (el, i) => {
+    // start playing when both all the videos are loaded
+    // and the user has clicked the button
+    await Promise.all([
+      Promise.all(sticazziVideos.map((video) => loadVideo(video))),
+      pEvent(sticazziBtn, 'click')
+    ])
+    sticazziBtn.classList.add('hidden')
+
+    sticazziVideos.forEach(async (video, i) => {
       const initialTimeToWait = i * window.sticazzInterval
 
-      const video = el
       await playAndPause(video)
       await sleep(initialTimeToWait)
       new Sticazzo(video)
