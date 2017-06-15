@@ -11,21 +11,15 @@ function pEvent(emitter, event) {
 }
 
 async function playAndPause(video) {
-  video.muted = true
   await video.play()
   video.pause()
   video.currentTime = 0
-  video.muted = false
 }
 
 async function supportsAutoplay(testVideo) {
   await loadVideo(testVideo)
   try {
-    // TODO make the function playAndPause work here
-    // await playAndPause(testVideo)
-    await testVideo.play()
-    testVideo.pause()
-    testVideo.currentTime = 0
+    await playAndPause(testVideo)
     return true
   } catch (e) {
     return false
@@ -69,7 +63,6 @@ function retrieveFromQueue(el) {
     return false
   }
 
-  console.warn('queueremoved', window.videoQueue)
   return window.videoQueue.shift()
 }
 
@@ -95,9 +88,9 @@ class Sticazzo {
     this.y = this.isSuper ? 50 : randomFromInterval(...this.heightLimits)
     this.el.style.zIndex = ++window.sticazzIndex
 
-    console.time('playing time')
+    // console.time('playing time')
     await this.el.play()
-    console.timeEnd('playing time')
+    // console.timeEnd('playing time')
     this.el.classList.remove('hidden')
     await this.animate(this.el).finished
     this.el.classList.add('hidden')
@@ -213,7 +206,3 @@ async function init() {
 }
 
 init()
-
-window.addEventListener('queueadded', () => {
-  console.log('queueadded', window.videoQueue)
-})
