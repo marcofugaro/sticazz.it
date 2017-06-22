@@ -68,7 +68,8 @@ function retrieveFromQueue(el) {
 
 
 class Sticazzo {
-  constructor(el) {
+  constructor(el, options) {
+    this.options = options
     this.widthLimits = [20, 80]
     this.heightLimits = [20, 80]
     this.el = el
@@ -101,9 +102,10 @@ class Sticazzo {
   }
 
   animate(el) {
-    const initialScale = 0.9
-    const middleScale = 1
-    const finalScale = middleScale + el.duration * 0.06
+    const { isDesktop } = this.options
+    const initialScale = isDesktop ? 0.9 : 1
+    const middleScale = isDesktop ? 1 : 1
+    const finalScale = isDesktop ? middleScale + el.duration * 0.06 : 1
 
     const growOutDuration = 100
 
@@ -111,9 +113,9 @@ class Sticazzo {
 
     const timeline = new SequenceEffect([
       new KeyframeEffect(el, [
-        { offset: 0, transform: `translate(${translation})`, opacity: 0 },
-        { offset: 0.1, opacity: 1 },
-        { offset: 1, transform: `translate(${translation})`, opacity: 1 },
+        { offset: 0, transform: `translate(${translation}) scale(${initialScale})`, opacity: 0 },
+        { offset: 0.5, opacity: 1 },
+        { offset: 1, transform: `translate(${translation}) scale(${middleScale})`, opacity: 1 },
       ], {
         duration: growOutDuration,
         easing: 'ease-out',
@@ -122,9 +124,9 @@ class Sticazzo {
       }),
 
       new KeyframeEffect(el, [
-        { offset: 0, transform: `translate(${translation})`, opacity: 1 },
+        { offset: 0, transform: `translate(${translation}) scale(${middleScale})`, opacity: 1 },
         { offset: 0.9, opacity: 1 },
-        { offset: 1, transform: `translate(${translation})`, opacity: 0 },
+        { offset: 1, transform: `translate(${translation}) scale(${finalScale})`, opacity: 0 },
       ], {
         duration: (el.duration * 1000) - growOutDuration,
         easing: 'linear',
@@ -166,7 +168,12 @@ async function init() {
   window.superSticazzoPause = 1000 // how much time the superSticazzo stays in place
   window.videoQueue = []
 
+  const sticazziBtn = document.querySelector('.sticazzibtn')
+  const sticazzintainer = document.querySelector('.sticazzintainer')
+
   if (isDesktop) {
+    sticazzintainer.classList.remove('opaque')
+
     // wait for the first video to load and then start playing
     await Promise.race(
       sticazziVideos.map(async (video) => {
@@ -181,10 +188,9 @@ async function init() {
       await sleep(initialTimeToWait)
 
       const video = retrieveFromQueue() || await pEvent(window, 'queueadded') && retrieveFromQueue()
-      new Sticazzo(video)
+      new Sticazzo(video, { isDesktop })
     })
   } else {
-    const sticazziBtn = document.querySelector('.sticazzibtn')
     sticazziBtn.classList.remove('hidden')
 
     // start playing when both all the videos are loaded
@@ -194,13 +200,14 @@ async function init() {
       pEvent(sticazziBtn, 'click')
     ])
     sticazziBtn.classList.add('hidden')
+    sticazzintainer.classList.remove('opaque')
 
     sticazziVideos.forEach(async (video, i) => {
       const initialTimeToWait = i * window.sticazzInterval
 
       await playAndPause(video)
       await sleep(initialTimeToWait)
-      new Sticazzo(video)
+      new Sticazzo(video, { isDesktop })
     })
   }
 }

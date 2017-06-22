@@ -7,6 +7,15 @@ body {
   box-sizing: border-box;
 }
 
+.hidden {
+  display: none !important;
+}
+.opaque {
+  opacity: 0 !important;
+}
+
+
+
 .containerenzo {
   position: fixed;
   top: 0;
@@ -15,9 +24,6 @@ body {
   right: 0;
   overflow: hidden;
 }
-
-
-
 video {
   position: absolute;
   opacity: 0;
@@ -38,6 +44,7 @@ video:not(.supersticazzo) {
   justify-content: space-between;
   padding-top: 0.6em;
   padding-bottom: 0.6em;
+  transition: opacity 1s ease;
 }
 .stitanticazzi {
   line-height: 1.6em;
@@ -45,14 +52,11 @@ video:not(.supersticazzo) {
   font-weight: 900;
   font-size: calc(22px + 1vw);
   color: rgba(255, 255, 255, 0.1);
-  color: #111;
 }
 
 
 
-.hidden {
-  display: none;
-}
+
 .sticazzibtn {
   position: absolute;
   top: 50%;
