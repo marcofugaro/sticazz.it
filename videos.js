@@ -103,11 +103,11 @@ class Sticazzo {
 
   animate(el) {
     const { isDesktop } = this.options
-    const initialScale = isDesktop ? 0.9 : 1
+    const initialScale = isDesktop ? 0.8 : 1
     const middleScale = isDesktop ? 1 : 1
     const finalScale = isDesktop ? middleScale + el.duration * 0.06 : 1
 
-    const growOutDuration = 100
+    const growOutDuration = isDesktop ? 100 : 300
 
     const translation = `calc(-50% + ${this.x}vw), calc(-50% + ${this.y}vh)`
 
@@ -199,6 +199,8 @@ async function init() {
       Promise.all(sticazziVideos.map((video) => loadVideo(video))),
       pEvent(sticazziBtn, 'click')
     ])
+    await sleep(200)
+
     sticazziBtn.classList.add('hidden')
     sticazzintainer.classList.remove('opaque')
 

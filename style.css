@@ -1,7 +1,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: #111;
+  background: black;
 }
 *, *::before, *::after {
   box-sizing: border-box;
@@ -87,7 +87,7 @@ video:not(.supersticazzo) {
   box-shadow: inset 0 -15px 25px -15px rgba(255, 255, 255, 0.2);
 
   will-change: transform;
-  transition: transform 0.03s ease-out;
+  transition: transform 0.015s ease-out;
   z-index: 10;
   transform-origin: center bottom;
   transform: rotateX(45deg);
@@ -103,7 +103,7 @@ video:not(.supersticazzo) {
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
   will-change: transform;
-  transition: transform 0.03s ease-out;
+  transition: transform 0.015s ease-out;
   transform-origin: center top;
   transform: rotateX(-17deg) translateY(-3px) scaleX(0.99);
 }
