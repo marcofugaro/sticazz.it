@@ -72,6 +72,7 @@ video:not(.supersticazzo) {
   transform: translate(-50%, -50%);
   z-index: 1000;
   perspective: 300px;
+  transition: opacity 1s ease;
 }
 .sticazzibtn::before {
   content: 'Press to\00000aSTICAZZI';

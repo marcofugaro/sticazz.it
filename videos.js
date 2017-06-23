@@ -172,6 +172,7 @@ async function init() {
   const sticazzintainer = document.querySelector('.sticazzintainer')
 
   if (isDesktop) {
+    sticazziBtn.classList.add('hidden')
     sticazzintainer.classList.remove('opaque')
 
     // wait for the first video to load and then start playing
@@ -191,14 +192,13 @@ async function init() {
       new Sticazzo(video, { isDesktop })
     })
   } else {
-    sticazziBtn.classList.remove('hidden')
+    sticazziBtn.classList.remove('opaque')
 
-    // start playing when both all the videos are loaded
-    // and the user has clicked the button
-    await Promise.all([
-      Promise.all(sticazziVideos.map((video) => loadVideo(video))),
-      pEvent(sticazziBtn, 'click')
-    ])
+    // load the videos first, then wait for the user to click and play them
+    await Promise.all(sticazziVideos.map((video) => loadVideo(video)))
+    await pEvent(sticazziBtn, 'click')
+
+    // wait 200ms for the button animation to take effect
     await sleep(200)
 
     sticazziBtn.classList.add('hidden')
