@@ -172,7 +172,6 @@ async function init() {
   const sticazzintainer = document.querySelector('.sticazzintainer')
 
   if (isDesktop) {
-    sticazziBtn.classList.add('hidden')
     sticazzintainer.classList.remove('opaque')
 
     // wait for the first video to load and then start playing
@@ -192,6 +191,8 @@ async function init() {
       new Sticazzo(video, { isDesktop })
     })
   } else {
+    sticazziBtn.classList.remove('hidden')
+    await sleep(10)
     sticazziBtn.classList.remove('opaque')
 
     // load the videos first, then wait for the user to click and play them
