@@ -92,9 +92,8 @@ class Sticazzo {
     // console.time('playing time')
     await this.el.play()
     // console.timeEnd('playing time')
-    this.el.classList.remove('hidden')
+
     await this.animate(this.el).finished
-    this.el.classList.add('hidden')
     this.stopVideo(this.el)
 
     await sleep(this.timeToWait)
